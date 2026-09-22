@@ -228,3 +228,39 @@ async def test_applied_level_follows_the_unit_in_auto(
     await refresh(hass, setup_entry)
     assert state(hass, entity_id("sensor", "niveau_en_cours")) == "boost"
     assert hass.states.get(entity_id("fan", "ventilation")).attributes["percentage"] == 100
+
+
+async def test_unit_clock_and_drift(hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc, entity_id) -> None:
+    """L'horloge de la VMC dérive : c'est elle qui cadence la programmation horaire."""
+    from freezegun import freeze_time
+
+    assert state(hass, entity_id("sensor", "horloge")) == "22/09/2026 21:25:31"
+
+    # La dérive se mesure sur l'heure locale de Home Assistant, pas sur UTC.
+    await hass.config.async_set_time_zone("UTC")
+    with freeze_time("2026-09-22 22:25:31"):
+        await refresh(hass, setup_entry)
+        assert state(hass, entity_id("sensor", "derive_horloge")) == "60"
+
+
+async def test_invalid_clock_is_ignored(hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc, entity_id) -> None:
+    vmc.registers.update({1305: 0, 1306: 0})  # horloge non initialisée
+    await refresh(hass, setup_entry)
+    assert state(hass, entity_id("sensor", "horloge")) == STATE_UNKNOWN
+    assert state(hass, entity_id("sensor", "derive_horloge")) == STATE_UNKNOWN
+
+
+async def test_flow_setpoints_are_read_only_and_optional(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc
+) -> None:
+    """Les consignes de mise en service sont exposées, mais désactivées par défaut."""
+    from homeassistant.helpers import entity_registry as er
+
+    registry = er.async_get(hass)
+    entry = registry.async_get_entity_id("sensor", DOMAIN, f"{setup_entry.unique_id}_consigne_extraction_boost")
+    assert entry and registry.async_get(entry).disabled_by is er.RegistryEntryDisabler.INTEGRATION
+
+    registry.async_update_entity(entry, disabled_by=None)
+    await hass.config_entries.async_reload(setup_entry.entry_id)
+    await hass.async_block_till_done()
+    assert hass.states.get(entry).state == "210"

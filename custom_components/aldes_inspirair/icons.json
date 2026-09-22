@@ -122,6 +122,45 @@
       },
       "regime_moteur_insufflation": {
         "default": "mdi:engine"
+      },
+      "horloge": {
+        "default": "mdi:clock-outline"
+      },
+      "derive_horloge": {
+        "default": "mdi:clock-alert-outline"
+      },
+      "config_ventilateurs": {
+        "default": "mdi:fan-auto"
+      },
+      "consigne_extraction_vacances": {
+        "default": "mdi:fan-chevron-up"
+      },
+      "consigne_extraction_quotidien": {
+        "default": "mdi:fan-chevron-up"
+      },
+      "consigne_extraction_cuisine": {
+        "default": "mdi:fan-chevron-up"
+      },
+      "consigne_extraction_boost": {
+        "default": "mdi:fan-chevron-up"
+      },
+      "consigne_extraction_max": {
+        "default": "mdi:fan-chevron-up"
+      },
+      "consigne_insufflation_vacances": {
+        "default": "mdi:fan-chevron-down"
+      },
+      "consigne_insufflation_quotidien": {
+        "default": "mdi:fan-chevron-down"
+      },
+      "consigne_insufflation_cuisine": {
+        "default": "mdi:fan-chevron-down"
+      },
+      "consigne_insufflation_boost": {
+        "default": "mdi:fan-chevron-down"
+      },
+      "consigne_insufflation_max": {
+        "default": "mdi:fan-chevron-down"
       }
     }
   }

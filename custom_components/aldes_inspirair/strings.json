@@ -194,6 +194,50 @@
       },
       "regime_moteur_insufflation": {
         "name": "Supply fan speed"
+      },
+      "horloge": {
+        "name": "Unit clock"
+      },
+      "derive_horloge": {
+        "name": "Clock drift"
+      },
+      "config_ventilateurs": {
+        "name": "Fan configuration",
+        "state": {
+          "a": "A",
+          "b": "B",
+          "aucune": "None"
+        }
+      },
+      "consigne_extraction_vacances": {
+        "name": "Extract airflow setpoint — Holiday"
+      },
+      "consigne_extraction_quotidien": {
+        "name": "Extract airflow setpoint — Daily"
+      },
+      "consigne_extraction_cuisine": {
+        "name": "Extract airflow setpoint — Kitchen boost"
+      },
+      "consigne_extraction_boost": {
+        "name": "Extract airflow setpoint — Boost"
+      },
+      "consigne_extraction_max": {
+        "name": "Extract airflow setpoint — Max"
+      },
+      "consigne_insufflation_vacances": {
+        "name": "Supply airflow setpoint — Holiday"
+      },
+      "consigne_insufflation_quotidien": {
+        "name": "Supply airflow setpoint — Daily"
+      },
+      "consigne_insufflation_cuisine": {
+        "name": "Supply airflow setpoint — Kitchen boost"
+      },
+      "consigne_insufflation_boost": {
+        "name": "Supply airflow setpoint — Boost"
+      },
+      "consigne_insufflation_max": {
+        "name": "Supply airflow setpoint — Max"
       }
     }
   },

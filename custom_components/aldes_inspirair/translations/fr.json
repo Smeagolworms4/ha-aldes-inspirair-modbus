@@ -194,6 +194,50 @@
       },
       "regime_moteur_insufflation": {
         "name": "Régime ventilateur insufflation"
+      },
+      "horloge": {
+        "name": "Horloge de la VMC"
+      },
+      "derive_horloge": {
+        "name": "Dérive de l'horloge"
+      },
+      "config_ventilateurs": {
+        "name": "Configuration ventilateurs",
+        "state": {
+          "a": "A",
+          "b": "B",
+          "aucune": "Aucune"
+        }
+      },
+      "consigne_extraction_vacances": {
+        "name": "Consigne débit extraction — Vacances"
+      },
+      "consigne_extraction_quotidien": {
+        "name": "Consigne débit extraction — Quotidien"
+      },
+      "consigne_extraction_cuisine": {
+        "name": "Consigne débit extraction — Pointe cuisine"
+      },
+      "consigne_extraction_boost": {
+        "name": "Consigne débit extraction — Boost"
+      },
+      "consigne_extraction_max": {
+        "name": "Consigne débit extraction — Maxi"
+      },
+      "consigne_insufflation_vacances": {
+        "name": "Consigne débit insufflation — Vacances"
+      },
+      "consigne_insufflation_quotidien": {
+        "name": "Consigne débit insufflation — Quotidien"
+      },
+      "consigne_insufflation_cuisine": {
+        "name": "Consigne débit insufflation — Pointe cuisine"
+      },
+      "consigne_insufflation_boost": {
+        "name": "Consigne débit insufflation — Boost"
+      },
+      "consigne_insufflation_max": {
+        "name": "Consigne débit insufflation — Maxi"
       }
     }
   },

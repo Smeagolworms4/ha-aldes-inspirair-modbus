@@ -133,7 +133,9 @@ Tout est regroupé sous un seul appareil **VMC Aldes**.
 | Position du bypass | capteur | fermé, ouvert, en fermeture, en ouverture, ou les défauts de câblage signalés par la VMC |
 | Bypass ouvert | capteur binaire | |
 | Erreur / Défaut | capteur / capteur binaire | le défaut en clair, d'après la liste de la notice Aldes |
+| Horloge de la VMC, dérive de l'horloge | capteur | la date et l'heure internes de la machine, et son écart avec Home Assistant — c'est cette horloge que suit la programmation hebdomadaire |
 | Code erreur, équilibrage, commandes et régimes des ventilateurs extraction / insufflation | capteur | diagnostic |
+| Consignes de débit par niveau, configuration ventilateurs | capteur | valeurs de mise en service, en lecture seule, désactivées par défaut |
 
 ## Protocole
 
@@ -147,8 +149,9 @@ vraie InspirAIR Top, firmware 291.
   **FC06 est refusé** (fonction illégale) — tout comme une écriture d'un seul
   registre envoyée de la façon « habituelle » par la plupart des outils Modbus.
   Le FC16 sur un seul registre fonctionne.
-- La plupart des registres renvoient **`-1`** tant que le code installateur
-  **34102** n'a pas été écrit dans le registre **16** — l'équivalent Modbus du
+- Le registre **16** est un *niveau d'utilisateur*, pas un mot de passe : `avilleret/esphome-aldes` en
+  recense quatre — 0, 2345, 12054 et **34102**, le plus élevé. La plupart des registres renvoient **`-1`**
+  tant que **34102** n'a pas été écrit dans le registre **16** — l'équivalent Modbus du
   mot de passe installateur de la télécommande. L'intégration l'envoie avant
   chaque lecture, faute de savoir combien de temps il reste valable.
 
@@ -169,12 +172,18 @@ vraie InspirAIR Top, firmware 291.
 | 384 | code défaut en cours | L |
 | 1056 | **niveau appliqué** (0 à 3), y compris en auto | L |
 | 1057 | 10 quand l'auto pilote la VMC, 0 sinon | L |
+| 1028 | configuration ventilateurs (2 = A, 1 = B) | L |
+| 1040-1049 | consignes de débit par niveau, par paires (extraction, insufflation) : vacances, quotidien, pointe cuisine, boost, maxi | L |
+| 1304-1310 | horloge : année, mois, jour, jour de semaine (lundi = 0), heure, minute, seconde | L |
 
 Les registres 320/321 et 354/355 sont nommés d'après
 [avilleret/esphome-aldes](https://github.com/avilleret/esphome-aldes), qui les rattache aux ventilateurs
 d'extraction et d'insufflation. Les registres 346 et 347 viennent de la
 [notice Modbus InspirAIR Side](https://assets.aldes.fr/assets/docsFR/modbus-inspirair-side-notice-de-parametrage.pdf)
-d'Aldes, la table publiée la plus proche de celle du Top. Les registres 350 et 351 sont nommés dans la table Aldes ; lequel de 352/353 est
+d'Aldes, la table publiée la plus proche de celle du Top — en notant qu'elle donne pour le registre 257
+*2 = boost, 3 = invités*, là où le Top utilise *2 = bouton poussoir, 3 = boost*, vérifié ici. Les registres de
+durée qu'elle documente (264-266) sont inertes sur le Top : l'écriture est acceptée puis ignorée, la relecture
+reste à `-1`. Les registres 350 et 351 sont nommés dans la table Aldes ; lequel de 352/353 est
 l'air rejeté et lequel l'air insufflé a été déduit des mesures. La télécommande
 murale affiche les quatre valeurs avec leur nom dans *Installateur (0405) →
 Maintenance → Valeurs réelles* — ouvrez un ticket si elles ne concordent pas.
@@ -199,7 +208,7 @@ pip install -r requirements-test.txt
 pytest
 ```
 
-40 tests, joués contre une **fausse InspirAIR Top** : un petit serveur Modbus
+43 tests, joués contre une **fausse InspirAIR Top** : un petit serveur Modbus
 TCP qui se comporte comme la vraie — registres verrouillés tant que le code
 installateur n'est pas envoyé, FC06 refusé, esclave 2, silence sur un mauvais
 esclave. Ils couvrent le client Modbus seul, puis l'intégration chargée dans une

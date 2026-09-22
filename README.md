@@ -130,7 +130,9 @@ Everything is grouped under one **VMC Aldes** device.
 | Bypass position | sensor | closed, open, closing, opening, or the wiring faults the unit reports |
 | Bypass open | binary sensor | |
 | Error / Fault | sensor / binary sensor | the fault in plain words, from the list in the Aldes manual |
+| Unit clock, clock drift | sensor | the unit's own date and time, and how far it runs from Home Assistant's — it is what the weekly schedule follows |
 | Error code, balance, extract/supply fan commands (V) and speeds (rpm) | sensor | diagnostic |
+| Airflow setpoints per level, fan configuration | sensor | commissioning values, read-only, disabled by default |
 
 ## Protocol
 
@@ -143,7 +145,8 @@ firmware 291.
 - Holding registers only: **FC03** to read, **FC16** to write. **FC06 is
   refused** (illegal function) — so is a single-register write sent the "usual"
   way by most Modbus tools. FC16 on a single register works.
-- Most registers read **`-1`** until the installer code **34102** is written to
+- Register **16** is a *user level*, not a password: `avilleret/esphome-aldes` lists 0, 2345, 12054 and
+  **34102**, the highest. Most registers read **`-1`** until **34102** is written to
   register **16** — the Modbus counterpart of the remote's installer password.
   The integration sends it before every read, as nobody knows how long it lasts.
 
@@ -164,12 +167,17 @@ firmware 291.
 | 384 | current fault code | R |
 | 1056 | **applied level** (0–3), even in auto | R |
 | 1057 | 10 while auto drives the unit, 0 otherwise | R |
+| 1028 | fan configuration (2 = A, 1 = B) | R |
+| 1040-1049 | airflow setpoints per level, in (extract, supply) pairs: holiday, daily, kitchen boost, boost, max | R |
+| 1304-1310 | unit clock: year, month, day, weekday (Monday = 0), hour, minute, second | R |
 
 Registers 320/321 and 354/355 are named after
 [avilleret/esphome-aldes](https://github.com/avilleret/esphome-aldes), which maps them to the extract and
 supply fans. Registers 346 and 347 come from Aldes' own
 [InspirAIR Side Modbus notice](https://assets.aldes.fr/assets/docsFR/modbus-inspirair-side-notice-de-parametrage.pdf),
-the closest published table to the Top's. Registers 350 and 351 are named in Aldes' table; which of 352/353 is exhaust and
+the closest published table to the Top's — note that it maps register 257 as *2 = boost, 3 = guests*, whereas
+the Top uses *2 = push-button, 3 = boost*, as measured here. The duration registers it documents (264-266) are
+inert on the Top: writes are accepted and ignored, reads stay at `-1`. Registers 350 and 351 are named in Aldes' table; which of 352/353 is exhaust and
 which is supply was deduced from measurements. Your wall remote shows the four
 values with their names in *Installer (0405) → Maintenance → Real values* — open
 an issue if they disagree.
@@ -192,7 +200,7 @@ pip install -r requirements-test.txt
 pytest
 ```
 
-40 tests, run against a **fake InspirAIR Top**: a small Modbus TCP server that
+43 tests, run against a **fake InspirAIR Top**: a small Modbus TCP server that
 behaves like the real unit — locked registers until the installer code, FC06
 refused, slave 2, silence on a wrong slave. They cover the Modbus client on its
 own, then the integration loaded inside a real Home Assistant instance: setup,

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -22,10 +23,12 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from .const import (
     BYPASS_POSITIONS,
     LEVELS,
+    REG_CLOCK,
     ERROR_CODES,
     ERROR_UNKNOWN,
     REG_BALANCE,
@@ -34,7 +37,9 @@ from .const import (
     REG_APPLIED_LEVEL,
     REG_FILTER_SINCE_RESET,
     REG_FILTER_USE,
+    REG_FAN_CONFIG,
     REG_FLOW_EXTRACT,
+    REG_FLOW_SETPOINTS,
     REG_FLOW_SUPPLY,
     REG_MOTOR_CMD_1,
     REG_MOTOR_CMD_2,
@@ -118,12 +123,58 @@ def exchanger_efficiency(c: AldesCoordinator) -> float | None:
     return round(100 * (supply - outdoor) / (extract - outdoor), 1)
 
 
+def unit_clock(c: AldesCoordinator) -> datetime | None:
+    """Horloge interne de la VMC, celle qui sert de base à la programmation horaire."""
+    year, month, day, _weekday, hour, minute, second = (c.value(REG_CLOCK + i) or 0 for i in range(7))
+    try:
+        return datetime(year, month, day, hour, minute, second)
+    except ValueError:
+        return None
+
+
+def clock_drift(c: AldesCoordinator) -> int | None:
+    """Retard ou avance de l'horloge de la VMC, en minutes, sur l'heure locale."""
+    clock = unit_clock(c)
+    if clock is None:
+        return None
+    return round((dt_util.now().replace(tzinfo=None) - clock).total_seconds() / 60)
+
+
 def error_state(c: AldesCoordinator) -> str | None:
     code = c.value(REG_ERROR)
     return None if code is None else error_key(code)
 
 
+def flow_setpoint(level: str, register: int, supply: bool) -> AldesSensorDescription:
+    """Consigne de débit d'un niveau : réglage de mise en service, donc en lecture seule."""
+    return AldesSensorDescription(
+        key=f"consigne_{'insufflation' if supply else 'extraction'}_{level}",
+        device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
+        native_unit_of_measurement=UnitOfVolumeFlowRate.CUBIC_METERS_PER_HOUR,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=reg(register + (1 if supply else 0)),
+    )
+
+
+SETPOINTS = tuple(
+    flow_setpoint(level, register, supply)
+    for level, register in REG_FLOW_SETPOINTS.items()
+    for supply in (False, True)
+)
+
 DESCRIPTIONS = (
+    *SETPOINTS,
+    AldesSensorDescription(
+        key="config_ventilateurs",
+        device_class=SensorDeviceClass.ENUM,
+        options=["a", "b", "aucune"],
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=lambda c: {2: "a", 1: "b"}.get(c.value(REG_FAN_CONFIG), "aucune")
+        if c.value(REG_FAN_CONFIG) is not None
+        else None,
+    ),
     temperature("temp_exterieure", REG_T_OUTDOOR),
     temperature("temp_extraite", REG_T_EXTRACT),
     temperature("temp_rejetee", REG_T_EXHAUST),
@@ -165,6 +216,18 @@ DESCRIPTIONS = (
         device_class=SensorDeviceClass.ENUM,
         options=[error_key(code) for code in ERROR_CODES] + [ERROR_UNKNOWN],
         value_fn=error_state,
+    ),
+    AldesSensorDescription(
+        key="horloge",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda c: (clock := unit_clock(c)) and clock.strftime("%d/%m/%Y %H:%M:%S"),
+    ),
+    AldesSensorDescription(
+        key="derive_horloge",
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=clock_drift,
     ),
     AldesSensorDescription(
         key="code_erreur",

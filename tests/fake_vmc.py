@@ -20,6 +20,12 @@ SNAPSHOT = {
     354: 1241, 355: 2474, 356: 120, 357: 120, 384: 0,
     1056: 1,   # niveau réellement applique
     1057: 0,   # 10 quand le mode auto pilote
+    1028: 2,   # configuration ventilateurs : A
+    # consignes de débit par niveau (extraction, insufflation)
+    1040: 60, 1041: 60, 1042: 120, 1043: 120, 1044: 210, 1045: 210,
+    1046: 210, 1047: 210, 1048: 300, 1049: 300,
+    # horloge interne : 22/09/2026 21:25:31, un mardi (lundi = 0)
+    1304: 2026, 1305: 9, 1306: 22, 1307: 1, 1308: 21, 1309: 25, 1310: 31,
 }
 PROTECTED = {320, 321, 352, 353, 354, 355, 356, 357}
 AUTO = 255

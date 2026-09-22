@@ -16,7 +16,7 @@ UNLOCK_REGISTER = 16
 UNLOCK_CODE = 34102
 
 # Blocs lus à chaque rafraîchissement (adresse de départ, nombre de registres).
-READ_BLOCKS = ((12, 1), (256, 44), (320, 39), (378, 7), (1056, 2))
+READ_BLOCKS = ((12, 1), (256, 44), (320, 39), (378, 7), (1024, 34), (1304, 7))
 
 REG_SOFTWARE = 12
 REG_SPEED = 257
@@ -37,6 +37,18 @@ REG_MOTOR_RPM_2 = 355
 REG_FLOW_EXTRACT = 356
 REG_FLOW_SUPPLY = 357
 REG_ERROR = 384
+REG_FAN_CONFIG = 1028
+# Consignes de débit par niveau, par paires (extraction, insufflation).
+# Noms d'après github.com/avilleret/esphome-aldes.
+REG_FLOW_SETPOINTS = {
+    "vacances": 1040,
+    "quotidien": 1042,
+    "cuisine": 1044,
+    "boost": 1046,
+    "max": 1048,
+}
+# Horloge interne : année, mois, jour, jour de semaine (lundi = 0), heure, minute, seconde.
+REG_CLOCK = 1304
 REG_APPLIED_LEVEL = 1056
 REG_AUTO_ACTIVE = 1057
 
