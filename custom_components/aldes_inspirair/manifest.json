@@ -1,0 +1,14 @@
+{
+  "domain": "aldes_inspirair",
+  "name": "Aldes InspirAIR Top (Modbus)",
+  "codeowners": [
+    "@Smeagolworms4"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/Smeagolworms4/ha-aldes-inspirair-modbus",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/Smeagolworms4/ha-aldes-inspirair-modbus/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

@@ -1,0 +1,194 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "VMC Aldes InspirAIR Top",
+        "description": "Passerelle Modbus TCP reliée au bornier X3 de la VMC (9600 bauds, 8N1, mode passerelle Modbus).",
+        "data": {
+          "host": "Adresse de la passerelle",
+          "port": "Port Modbus TCP",
+          "slave": "Adresse esclave Modbus"
+        },
+        "data_description": {
+          "host": "IP de la passerelle RS485 ↔ Ethernet/WiFi.",
+          "slave": "2 par défaut sur les VMC Aldes."
+        }
+      },
+      "reconfigure": {
+        "title": "Modifier la connexion",
+        "data": {
+          "host": "Adresse de la passerelle",
+          "port": "Port Modbus TCP",
+          "slave": "Adresse esclave Modbus"
+        },
+        "data_description": {
+          "host": "IP de la passerelle RS485 ↔ Ethernet/WiFi.",
+          "slave": "2 par défaut sur les VMC Aldes."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "La VMC ne répond pas via cette passerelle. Vérifiez l'adresse, le câblage A/B et les réglages série."
+    },
+    "abort": {
+      "already_configured": "Cette VMC est déjà configurée.",
+      "reconfigure_successful": "Connexion mise à jour."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "scan_interval": "Intervalle d'interrogation (secondes)"
+        },
+        "data_description": {
+          "scan_interval": "De 5 s à 10 min."
+        }
+      }
+    }
+  },
+  "entity": {
+    "fan": {
+      "ventilation": {
+        "name": "Ventilation",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "vacances": "Vacances",
+              "quotidien": "Quotidien",
+              "cuisine": "Cuisine",
+              "boost": "Boost"
+            }
+          }
+        }
+      }
+    },
+    "select": {
+      "niveau": {
+        "name": "Niveau de ventilation",
+        "state": {
+          "vacances": "Vacances",
+          "quotidien": "Quotidien",
+          "cuisine": "Cuisine",
+          "boost": "Boost"
+        }
+      },
+      "bypass_mode": {
+        "name": "Mode bypass",
+        "state": {
+          "desactive": "Désactivé",
+          "automatique": "Automatique",
+          "optimisation_hiver": "Optimisation hiver",
+          "optimisation_ete": "Optimisation été",
+          "ouvert": "Ouvert forcé"
+        }
+      }
+    },
+    "number": {
+      "filtre_duree": {
+        "name": "Durée de vie des filtres"
+      }
+    },
+    "binary_sensor": {
+      "bypass_ouvert": {
+        "name": "Bypass ouvert"
+      },
+      "defaut": {
+        "name": "Défaut"
+      }
+    },
+    "sensor": {
+      "temp_exterieure": {
+        "name": "Température air neuf"
+      },
+      "temp_extraite": {
+        "name": "Température air extrait"
+      },
+      "temp_rejetee": {
+        "name": "Température air rejeté"
+      },
+      "temp_insufflee": {
+        "name": "Température air insufflé"
+      },
+      "debit_extraction": {
+        "name": "Débit extraction"
+      },
+      "debit_insufflation": {
+        "name": "Débit insufflation"
+      },
+      "rendement_echangeur": {
+        "name": "Rendement échangeur"
+      },
+      "filtres_jours_restants": {
+        "name": "Filtres : jours restants"
+      },
+      "code_erreur": {
+        "name": "Code erreur"
+      },
+      "equilibrage": {
+        "name": "Équilibrage insufflation/extraction"
+      },
+      "commande_moteur_1": {
+        "name": "Commande moteur 1"
+      },
+      "commande_moteur_2": {
+        "name": "Commande moteur 2"
+      },
+      "regime_moteur_1": {
+        "name": "Régime moteur 1"
+      },
+      "regime_moteur_2": {
+        "name": "Régime moteur 2"
+      },
+      "bypass_position": {
+        "name": "Position du bypass",
+        "state": {
+          "ferme": "Fermé",
+          "ouvert": "Ouvert",
+          "fermeture": "En fermeture",
+          "ouverture": "En ouverture",
+          "court_circuit": "Court-circuit",
+          "circuit_ouvert": "Circuit ouvert",
+          "sous_alimentation": "Sous-alimentation"
+        }
+      },
+      "erreur": {
+        "name": "Erreur",
+        "state": {
+          "aucune": "Aucune erreur",
+          "e49": "49 · ID produit absent",
+          "e50": "50 · Produit non configuré",
+          "e53": "53 · Défaut capteur de pression",
+          "e70": "70 · Contact sec activé",
+          "e72": "72 · Défaut sonde HR",
+          "e74": "74 · Perte de communication avec la télécommande",
+          "e76": "76 · Défaut sonde CO2 de la télécommande",
+          "e81": "81 · Préchauffe externe absente",
+          "e83": "83 · La préchauffe externe ne chauffe pas",
+          "e84": "84 · Préchauffe interne sur le mauvais flux",
+          "e85": "85 · Défaut batterie de post-chauffe",
+          "e90": "90 · Test clapet coupe-feu KO",
+          "e91": "91 · Clapet coupe-feu déclenché",
+          "e92": "92 · Coupure communication clapet coupe-feu",
+          "e182": "182 · Moto-ventilateur extraction débranché ou HS",
+          "e183": "183 · Moto-ventilateur insufflation débranché ou HS",
+          "e239": "239 · Défaut sonde T° rejet d'air (Tr)",
+          "e240": "240 · Défaut sonde T° extérieure (Te)",
+          "e241": "241 · Défaut sonde T° insufflation (Ti)",
+          "e243": "243 · Défaut T° batterie externe",
+          "e251": "251 · Défaut sonde T° VMC (Tv)",
+          "inconnue": "Code inconnu (voir « Code erreur »)"
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "update_failed": {
+      "message": "La VMC ne répond pas : {error}"
+    },
+    "write_failed": {
+      "message": "La VMC a refusé l'écriture du registre {register} : {error}"
+    }
+  }
+}

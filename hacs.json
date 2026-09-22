@@ -1,0 +1,6 @@
+{
+  "name": "Aldes InspirAIR Top (Modbus)",
+  "content_in_root": false,
+  "render_readme": true,
+  "homeassistant": "2025.8.0"
+}

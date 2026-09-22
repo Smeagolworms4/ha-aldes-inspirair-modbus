@@ -1,0 +1,194 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Aldes InspirAIR Top ventilation",
+        "description": "Modbus TCP gateway wired to the X3 terminal of the unit (9600 baud, 8N1, Modbus gateway mode).",
+        "data": {
+          "host": "Gateway address",
+          "port": "Modbus TCP port",
+          "slave": "Modbus slave address"
+        },
+        "data_description": {
+          "host": "IP of the RS485 ↔ Ethernet/Wi-Fi gateway.",
+          "slave": "2 by default on Aldes units."
+        }
+      },
+      "reconfigure": {
+        "title": "Change the connection",
+        "data": {
+          "host": "Gateway address",
+          "port": "Modbus TCP port",
+          "slave": "Modbus slave address"
+        },
+        "data_description": {
+          "host": "IP of the RS485 ↔ Ethernet/Wi-Fi gateway.",
+          "slave": "2 by default on Aldes units."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "The unit does not answer through this gateway. Check the address, the A/B wiring and the serial settings."
+    },
+    "abort": {
+      "already_configured": "This unit is already configured.",
+      "reconfigure_successful": "Connection updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "scan_interval": "Polling interval (seconds)"
+        },
+        "data_description": {
+          "scan_interval": "From 5 s to 10 min."
+        }
+      }
+    }
+  },
+  "entity": {
+    "fan": {
+      "ventilation": {
+        "name": "Ventilation",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "vacances": "Holiday",
+              "quotidien": "Daily",
+              "cuisine": "Kitchen",
+              "boost": "Boost"
+            }
+          }
+        }
+      }
+    },
+    "select": {
+      "niveau": {
+        "name": "Ventilation level",
+        "state": {
+          "vacances": "Holiday",
+          "quotidien": "Daily",
+          "cuisine": "Kitchen",
+          "boost": "Boost"
+        }
+      },
+      "bypass_mode": {
+        "name": "Bypass mode",
+        "state": {
+          "desactive": "Disabled",
+          "automatique": "Automatic",
+          "optimisation_hiver": "Winter optimisation",
+          "optimisation_ete": "Summer optimisation",
+          "ouvert": "Forced open"
+        }
+      }
+    },
+    "number": {
+      "filtre_duree": {
+        "name": "Filter lifetime"
+      }
+    },
+    "binary_sensor": {
+      "bypass_ouvert": {
+        "name": "Bypass open"
+      },
+      "defaut": {
+        "name": "Fault"
+      }
+    },
+    "sensor": {
+      "temp_exterieure": {
+        "name": "Outdoor air temperature"
+      },
+      "temp_extraite": {
+        "name": "Extract air temperature"
+      },
+      "temp_rejetee": {
+        "name": "Exhaust air temperature"
+      },
+      "temp_insufflee": {
+        "name": "Supply air temperature"
+      },
+      "debit_extraction": {
+        "name": "Extract airflow"
+      },
+      "debit_insufflation": {
+        "name": "Supply airflow"
+      },
+      "rendement_echangeur": {
+        "name": "Heat exchanger efficiency"
+      },
+      "filtres_jours_restants": {
+        "name": "Filters: days left"
+      },
+      "code_erreur": {
+        "name": "Error code"
+      },
+      "equilibrage": {
+        "name": "Supply/extract balance"
+      },
+      "commande_moteur_1": {
+        "name": "Motor 1 command"
+      },
+      "commande_moteur_2": {
+        "name": "Motor 2 command"
+      },
+      "regime_moteur_1": {
+        "name": "Motor 1 speed"
+      },
+      "regime_moteur_2": {
+        "name": "Motor 2 speed"
+      },
+      "bypass_position": {
+        "name": "Bypass position",
+        "state": {
+          "ferme": "Closed",
+          "ouvert": "Open",
+          "fermeture": "Closing",
+          "ouverture": "Opening",
+          "court_circuit": "Short circuit",
+          "circuit_ouvert": "Open circuit",
+          "sous_alimentation": "Under-voltage"
+        }
+      },
+      "erreur": {
+        "name": "Error",
+        "state": {
+          "aucune": "No error",
+          "e49": "49 · Missing product ID",
+          "e50": "50 · Product not configured",
+          "e53": "53 · Pressure sensor fault",
+          "e70": "70 · Dry contact active",
+          "e72": "72 · Humidity sensor fault",
+          "e74": "74 · Lost communication with the remote",
+          "e76": "76 · Remote CO2 sensor fault",
+          "e81": "81 · External pre-heater missing",
+          "e83": "83 · External pre-heater not heating",
+          "e84": "84 · Internal pre-heater on the wrong airflow",
+          "e85": "85 · Post-heater fault",
+          "e90": "90 · Fire damper test failed",
+          "e91": "91 · Fire damper triggered",
+          "e92": "92 · Fire damper communication lost",
+          "e182": "182 · Extract fan unplugged or failed",
+          "e183": "183 · Supply fan unplugged or failed",
+          "e239": "239 · Exhaust air sensor fault (Tr)",
+          "e240": "240 · Outdoor air sensor fault (Te)",
+          "e241": "241 · Supply air sensor fault (Ti)",
+          "e243": "243 · External heater temperature fault",
+          "e251": "251 · Unit temperature sensor fault (Tv)",
+          "inconnue": "Unknown code (see “Error code”)"
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "update_failed": {
+      "message": "The unit does not answer: {error}"
+    },
+    "write_failed": {
+      "message": "The unit refused to write register {register}: {error}"
+    }
+  }
+}

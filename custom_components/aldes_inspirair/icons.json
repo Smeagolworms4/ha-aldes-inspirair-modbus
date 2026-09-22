@@ -1,0 +1,114 @@
+{
+  "entity": {
+    "fan": {
+      "ventilation": {
+        "default": "mdi:hvac",
+        "state_attributes": {
+          "preset_mode": {
+            "default": "mdi:fan",
+            "state": {
+              "vacances": "mdi:bag-suitcase",
+              "quotidien": "mdi:home",
+              "cuisine": "mdi:chef-hat",
+              "boost": "mdi:fan-plus"
+            }
+          }
+        }
+      }
+    },
+    "select": {
+      "niveau": {
+        "default": "mdi:fan",
+        "state": {
+          "vacances": "mdi:bag-suitcase",
+          "quotidien": "mdi:home",
+          "cuisine": "mdi:chef-hat",
+          "boost": "mdi:fan-plus"
+        }
+      },
+      "bypass_mode": {
+        "default": "mdi:swap-horizontal",
+        "state": {
+          "desactive": "mdi:swap-horizontal-hidden",
+          "ouvert": "mdi:arrow-right-bold"
+        }
+      }
+    },
+    "number": {
+      "filtre_duree": {
+        "default": "mdi:air-filter"
+      }
+    },
+    "binary_sensor": {
+      "bypass_ouvert": {
+        "default": "mdi:valve-closed",
+        "state": {
+          "on": "mdi:valve-open"
+        }
+      },
+      "defaut": {
+        "default": "mdi:check-circle-outline",
+        "state": {
+          "on": "mdi:alert-circle"
+        }
+      }
+    },
+    "sensor": {
+      "temp_exterieure": {
+        "default": "mdi:home-import-outline"
+      },
+      "temp_extraite": {
+        "default": "mdi:home-export-outline"
+      },
+      "temp_rejetee": {
+        "default": "mdi:weather-windy"
+      },
+      "temp_insufflee": {
+        "default": "mdi:air-filter"
+      },
+      "debit_extraction": {
+        "default": "mdi:fan-chevron-up"
+      },
+      "debit_insufflation": {
+        "default": "mdi:fan-chevron-down"
+      },
+      "rendement_echangeur": {
+        "default": "mdi:heat-wave"
+      },
+      "filtres_jours_restants": {
+        "default": "mdi:air-filter"
+      },
+      "bypass_position": {
+        "default": "mdi:valve",
+        "state": {
+          "ferme": "mdi:valve-closed",
+          "ouvert": "mdi:valve-open"
+        }
+      },
+      "erreur": {
+        "default": "mdi:alert-circle-outline",
+        "state": {
+          "aucune": "mdi:check-circle-outline"
+        }
+      },
+      "code_erreur": {
+        "default": "mdi:numeric"
+      },
+      "equilibrage": {
+        "default": "mdi:scale-balance"
+      },
+      "commande_moteur_1": {
+        "default": "mdi:sine-wave"
+      },
+      "commande_moteur_2": {
+        "default": "mdi:sine-wave"
+      },
+      "regime_moteur_1": {
+        "default": "mdi:engine"
+      },
+      "regime_moteur_2": {
+        "default": "mdi:engine"
+      }
+    }
+  }
+}

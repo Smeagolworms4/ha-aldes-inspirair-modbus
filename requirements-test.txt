@@ -1,0 +1,3 @@
+# Environnement de test : Home Assistant et son harnais pour composants tiers.
+homeassistant>=2025.8
+pytest-homeassistant-custom-component
