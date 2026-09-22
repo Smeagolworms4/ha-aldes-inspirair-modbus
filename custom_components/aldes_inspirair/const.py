@@ -16,7 +16,7 @@ UNLOCK_REGISTER = 16
 UNLOCK_CODE = 34102
 
 # Blocs lus à chaque rafraîchissement (adresse de départ, nombre de registres).
-READ_BLOCKS = ((12, 1), (256, 44), (320, 39), (378, 7))
+READ_BLOCKS = ((12, 1), (256, 44), (320, 39), (378, 7), (1056, 2))
 
 REG_SOFTWARE = 12
 REG_SPEED = 257
@@ -25,8 +25,8 @@ REG_FILTER_MONTHS = 267
 REG_BALANCE = 278
 REG_MOTOR_CMD_1 = 320
 REG_MOTOR_CMD_2 = 321
-REG_FILTER_STATE = 346
-REG_FILTER_DAYS = 347
+REG_FILTER_USE = 346
+REG_FILTER_SINCE_RESET = 347
 REG_BYPASS_POSITION = 348
 REG_T_OUTDOOR = 350
 REG_T_EXTRACT = 351
@@ -37,9 +37,15 @@ REG_MOTOR_RPM_2 = 355
 REG_FLOW_EXTRACT = 356
 REG_FLOW_SUPPLY = 357
 REG_ERROR = 384
+REG_APPLIED_LEVEL = 1056
+REG_AUTO_ACTIVE = 1057
 
 # Les valeurs sont des clés de traduction (strings.json).
-SPEEDS = {0: "vacances", 1: "quotidien", 2: "cuisine", 3: "boost"}
+LEVELS = {0: "vacances", 1: "quotidien", 2: "cuisine", 3: "boost"}
+AUTO = 255
+# Le mode « auto » se choisit comme les niveaux, mais n'est pas un niveau : la VMC
+# module elle-même d'après ses capteurs, et publie le niveau appliqué en 1056.
+SPEEDS = {**LEVELS, AUTO: "auto"}
 
 BYPASS_MODES = {
     0: "desactive",

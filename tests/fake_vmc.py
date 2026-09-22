@@ -18,14 +18,18 @@ SNAPSHOT = {
     320: 3000, 321: 3350, 346: 2, 347: 125, 348: 1,
     350: 2604, 351: 2732, 352: 2795, 353: 2631,
     354: 1241, 355: 2474, 356: 120, 357: 120, 384: 0,
+    1056: 1,   # niveau réellement applique
+    1057: 0,   # 10 quand le mode auto pilote
 }
 PROTECTED = {320, 321, 352, 353, 354, 355, 356, 357}
+AUTO = 255
 
 
 class FakeVmc:
     def __init__(self) -> None:
         self.registers = dict(SNAPSHOT)
         self.unlocked = False
+        self.auto_level = 1          # niveau choisi par la VMC quand elle est en auto
         self.silent = False          # la passerelle ne reçoit plus de réponse de la VMC
         self.reject_writes = False   # la VMC renvoie une exception sur toute écriture
         self.writes: list[tuple[int, int, int]] = []  # (fonction, registre, valeur)
@@ -86,3 +90,7 @@ class FakeVmc:
             self.unlocked = value == UNLOCK_CODE
             return
         self.registers[address] = value - 0x10000 if value > 0x7FFF else value
+        if address == 257:
+            # La VMC republie le niveau applique ; en auto elle choisit elle-meme.
+            self.registers[1056] = self.auto_level if value == AUTO else value
+            self.registers[1057] = 10 if value == AUTO else 0

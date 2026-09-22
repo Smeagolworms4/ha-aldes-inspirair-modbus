@@ -117,18 +117,20 @@ Everything is grouped under one **VMC Aldes** device.
 
 | Entity | Type | Detail |
 |---|---|---|
-| Ventilation | fan | the unit itself: Holiday / Daily / Kitchen / Boost presets, or a 4-step speed. No *off* — a heat-recovery unit is not meant to stop, *Holiday* is the lowest level |
-| Ventilation level | select | the same four levels, handy in automations |
+| Ventilation | fan | the unit itself: Holiday / Daily / Kitchen boost / Boost / **Auto** presets, or a 4-step speed. No *off* — a heat-recovery unit is not meant to stop, *Holiday* is the lowest level |
+| Ventilation level | select | the same choices, handy in automations |
+| Applied level | sensor | what the unit actually runs at. In *Auto* the requested mode reads 255, and this is the only way to know the real level |
 | Bypass mode | select | Disabled / Automatic / Winter optimisation / Summer optimisation / Forced open |
 | Filter lifetime | number | 6 to 12 months, as in the remote's menu |
 | Outdoor / extract / supply / exhaust air temperature | sensor | 0.01 °C resolution |
 | Extract / supply airflow | sensor | real airflow, m³/h |
 | Heat exchanger efficiency | sensor | computed only while the bypass is closed and the indoor/outdoor gap exceeds 3 °C |
-| Filters: days left | sensor | countdown to the next filter change |
+| Filters: usage | sensor | % of the filter lifetime used |
+| Filters: time since reset | sensor | hours since the filter timer was reset |
 | Bypass position | sensor | closed, open, closing, opening, or the wiring faults the unit reports |
 | Bypass open | binary sensor | |
 | Error / Fault | sensor / binary sensor | the fault in plain words, from the list in the Aldes manual |
-| Error code, balance, motor commands (V), motor speeds (rpm) | sensor | diagnostic |
+| Error code, balance, extract/supply fan commands (V) and speeds (rpm) | sensor | diagnostic |
 
 ## Protocol
 
@@ -148,20 +150,26 @@ firmware 291.
 | Register | Content | Access |
 |---|---|---|
 | 12 | software version | R |
-| 257 | level: 0 holiday, 1 daily, 2 kitchen, 3 boost | R/W |
+| 257 | requested mode: 0 holiday, 1 daily, 2 kitchen boost, 3 boost, **255 auto** | R/W |
 | 259 | bypass: 0 off, 1 auto, 2 winter, 3 summer, 4 open | R/W |
 | 267 | filter lifetime, months | R/W |
 | 278 | supply/extract balance, % | R |
 | 320 / 321 | motor commands, mV (0–10 V) | R, locked |
-| 347 | filters, days left | R |
+| 346 / 347 | filter usage (%) / hours since reset | R |
 | 348 | bypass position | R |
 | 350 / 351 | outdoor / extract air, 0.01 °C | R |
 | 352 / 353 | exhaust / supply air, 0.01 °C | R, locked |
-| 354 / 355 | motor speeds, rpm | R, locked |
+| 354 / 355 | extract / supply fan speed, rpm | R, locked |
 | 356 / 357 | extract / supply airflow, m³/h | R, locked |
 | 384 | current fault code | R |
+| 1056 | **applied level** (0–3), even in auto | R |
+| 1057 | 10 while auto drives the unit, 0 otherwise | R |
 
-Registers 350 and 351 are named in Aldes' table; which of 352/353 is exhaust and
+Registers 320/321 and 354/355 are named after
+[avilleret/esphome-aldes](https://github.com/avilleret/esphome-aldes), which maps them to the extract and
+supply fans. Registers 346 and 347 come from Aldes' own
+[InspirAIR Side Modbus notice](https://assets.aldes.fr/assets/docsFR/modbus-inspirair-side-notice-de-parametrage.pdf),
+the closest published table to the Top's. Registers 350 and 351 are named in Aldes' table; which of 352/353 is exhaust and
 which is supply was deduced from measurements. Your wall remote shows the four
 values with their names in *Installer (0405) → Maintenance → Real values* — open
 an issue if they disagree.
@@ -184,7 +192,7 @@ pip install -r requirements-test.txt
 pytest
 ```
 
-38 tests, run against a **fake InspirAIR Top**: a small Modbus TCP server that
+40 tests, run against a **fake InspirAIR Top**: a small Modbus TCP server that
 behaves like the real unit — locked registers until the installer code, FC06
 refused, slave 2, silence on a wrong slave. They cover the Modbus client on its
 own, then the integration loaded inside a real Home Assistant instance: setup,

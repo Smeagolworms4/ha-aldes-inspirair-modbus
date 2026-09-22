@@ -42,11 +42,12 @@ async def test_temperatures_and_flows(hass: HomeAssistant, entity_id) -> None:
 
 
 async def test_diagnostics(hass: HomeAssistant, entity_id) -> None:
-    assert state(hass, entity_id("sensor", "commande_moteur_1")) == "3.0"
-    assert state(hass, entity_id("sensor", "commande_moteur_2")) == "3.35"
-    assert state(hass, entity_id("sensor", "regime_moteur_1")) == "1241"
+    assert state(hass, entity_id("sensor", "commande_moteur_extraction")) == "3.0"
+    assert state(hass, entity_id("sensor", "commande_moteur_insufflation")) == "3.35"
+    assert state(hass, entity_id("sensor", "regime_moteur_extraction")) == "1241"
     assert state(hass, entity_id("sensor", "equilibrage")) == "100"
-    assert state(hass, entity_id("sensor", "filtres_jours_restants")) == "125"
+    assert state(hass, entity_id("sensor", "filtres_usage")) == "2"
+    assert state(hass, entity_id("sensor", "filtres_depuis_reset")) == "125"  # heures
 
 
 async def test_bypass_open(hass: HomeAssistant, entity_id) -> None:
@@ -92,7 +93,8 @@ async def test_fan_reflects_the_level(hass: HomeAssistant, entity_id) -> None:
     assert fan.state == "on"
     assert fan.attributes["preset_mode"] == "quotidien"
     assert fan.attributes["percentage"] == 50
-    assert fan.attributes["preset_modes"] == ["vacances", "quotidien", "cuisine", "boost"]
+    assert fan.attributes["preset_modes"] == ["vacances", "quotidien", "cuisine", "boost", "auto"]
+    assert fan.attributes["applied_level"] == "quotidien"
 
 
 async def test_fan_preset_mode(hass: HomeAssistant, vmc: FakeVmc, entity_id) -> None:
@@ -194,3 +196,35 @@ async def test_locked_register_is_unknown_not_minus_one(
 async def test_unload(hass: HomeAssistant, setup_entry: MockConfigEntry) -> None:
     assert await hass.config_entries.async_unload(setup_entry.entry_id)
     await hass.async_block_till_done()
+
+
+async def test_auto_mode_shows_the_applied_level(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc, entity_id
+) -> None:
+    """En auto, le niveau demandé vaut 255 : seul le registre 1056 dit ce que fait la VMC."""
+    vmc.auto_level = 2
+    await hass.services.async_call(
+        "select", "select_option", {ATTR_ENTITY_ID: entity_id("select", "niveau"), "option": "auto"}, blocking=True
+    )
+    assert vmc.registers[257] == 255
+
+    fan = hass.states.get(entity_id("fan", "ventilation"))
+    assert fan.attributes["preset_mode"] == "auto"
+    assert fan.attributes["applied_level"] == "cuisine"
+    assert fan.attributes["percentage"] == 75  # celui du niveau appliqué, pas du mode
+    assert state(hass, entity_id("sensor", "niveau_en_cours")) == "cuisine"
+    assert state(hass, entity_id("select", "niveau")) == "auto"
+
+
+async def test_applied_level_follows_the_unit_in_auto(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc, entity_id
+) -> None:
+    """La VMC peut changer de niveau toute seule : l'entité doit suivre."""
+    vmc.registers.update({257: 255, 1056: 0, 1057: 10})
+    await refresh(hass, setup_entry)
+    assert state(hass, entity_id("sensor", "niveau_en_cours")) == "vacances"
+
+    vmc.registers[1056] = 3
+    await refresh(hass, setup_entry)
+    assert state(hass, entity_id("sensor", "niveau_en_cours")) == "boost"
+    assert hass.states.get(entity_id("fan", "ventilation")).attributes["percentage"] == 100

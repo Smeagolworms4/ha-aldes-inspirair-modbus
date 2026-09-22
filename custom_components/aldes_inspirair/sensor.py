@@ -25,12 +25,15 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import (
     BYPASS_POSITIONS,
+    LEVELS,
     ERROR_CODES,
     ERROR_UNKNOWN,
     REG_BALANCE,
     REG_BYPASS_POSITION,
     REG_ERROR,
-    REG_FILTER_DAYS,
+    REG_APPLIED_LEVEL,
+    REG_FILTER_SINCE_RESET,
+    REG_FILTER_USE,
     REG_FLOW_EXTRACT,
     REG_FLOW_SUPPLY,
     REG_MOTOR_CMD_1,
@@ -134,10 +137,22 @@ DESCRIPTIONS = (
         value_fn=exchanger_efficiency,
     ),
     AldesSensorDescription(
-        key="filtres_jours_restants",
+        key="niveau_en_cours",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(LEVELS.values()),
+        value_fn=lambda c: LEVELS.get(c.value(REG_APPLIED_LEVEL)),
+    ),
+    AldesSensorDescription(
+        key="filtres_usage",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=reg(REG_FILTER_USE),
+    ),
+    AldesSensorDescription(
+        key="filtres_depuis_reset",
         device_class=SensorDeviceClass.DURATION,
-        native_unit_of_measurement=UnitOfTime.DAYS,
-        value_fn=reg(REG_FILTER_DAYS),
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        value_fn=reg(REG_FILTER_SINCE_RESET),
     ),
     AldesSensorDescription(
         key="bypass_position",
@@ -162,10 +177,10 @@ DESCRIPTIONS = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=reg(REG_BALANCE),
     ),
-    motor_command("commande_moteur_1", REG_MOTOR_CMD_1),
-    motor_command("commande_moteur_2", REG_MOTOR_CMD_2),
-    motor_speed("regime_moteur_1", REG_MOTOR_RPM_1),
-    motor_speed("regime_moteur_2", REG_MOTOR_RPM_2),
+    motor_command("commande_moteur_extraction", REG_MOTOR_CMD_1),
+    motor_command("commande_moteur_insufflation", REG_MOTOR_CMD_2),
+    motor_speed("regime_moteur_extraction", REG_MOTOR_RPM_1),
+    motor_speed("regime_moteur_insufflation", REG_MOTOR_RPM_2),
 )
 
 

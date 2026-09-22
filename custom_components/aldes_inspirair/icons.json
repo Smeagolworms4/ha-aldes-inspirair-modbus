@@ -10,7 +10,8 @@
               "vacances": "mdi:bag-suitcase",
               "quotidien": "mdi:home",
               "cuisine": "mdi:chef-hat",
-              "boost": "mdi:fan-plus"
+              "boost": "mdi:fan-plus",
+              "auto": "mdi:auto-mode"
             }
           }
         }
@@ -23,7 +24,8 @@
           "vacances": "mdi:bag-suitcase",
           "quotidien": "mdi:home",
           "cuisine": "mdi:chef-hat",
-          "boost": "mdi:fan-plus"
+          "boost": "mdi:fan-plus",
+          "auto": "mdi:auto-mode"
         }
       },
       "bypass_mode": {
@@ -75,9 +77,6 @@
       "rendement_echangeur": {
         "default": "mdi:heat-wave"
       },
-      "filtres_jours_restants": {
-        "default": "mdi:air-filter"
-      },
       "bypass_position": {
         "default": "mdi:valve",
         "state": {
@@ -97,16 +96,31 @@
       "equilibrage": {
         "default": "mdi:scale-balance"
       },
-      "commande_moteur_1": {
+      "niveau_en_cours": {
+        "default": "mdi:fan",
+        "state": {
+          "vacances": "mdi:bag-suitcase",
+          "quotidien": "mdi:home",
+          "cuisine": "mdi:chef-hat",
+          "boost": "mdi:fan-plus"
+        }
+      },
+      "filtres_usage": {
+        "default": "mdi:air-filter"
+      },
+      "filtres_depuis_reset": {
+        "default": "mdi:timer-sand"
+      },
+      "commande_moteur_extraction": {
         "default": "mdi:sine-wave"
       },
-      "commande_moteur_2": {
+      "commande_moteur_insufflation": {
         "default": "mdi:sine-wave"
       },
-      "regime_moteur_1": {
+      "regime_moteur_extraction": {
         "default": "mdi:engine"
       },
-      "regime_moteur_2": {
+      "regime_moteur_insufflation": {
         "default": "mdi:engine"
       }
     }

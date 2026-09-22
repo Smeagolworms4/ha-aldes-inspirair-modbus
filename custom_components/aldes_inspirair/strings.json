@@ -57,8 +57,9 @@
             "state": {
               "vacances": "Holiday",
               "quotidien": "Daily",
-              "cuisine": "Kitchen",
-              "boost": "Boost"
+              "cuisine": "Kitchen boost",
+              "boost": "Boost",
+              "auto": "Auto"
             }
           }
         }
@@ -70,8 +71,9 @@
         "state": {
           "vacances": "Holiday",
           "quotidien": "Daily",
-          "cuisine": "Kitchen",
-          "boost": "Boost"
+          "cuisine": "Kitchen boost",
+          "boost": "Boost",
+          "auto": "Auto"
         }
       },
       "bypass_mode": {
@@ -120,26 +122,11 @@
       "rendement_echangeur": {
         "name": "Heat exchanger efficiency"
       },
-      "filtres_jours_restants": {
-        "name": "Filters: days left"
-      },
       "code_erreur": {
         "name": "Error code"
       },
       "equilibrage": {
         "name": "Supply/extract balance"
-      },
-      "commande_moteur_1": {
-        "name": "Motor 1 command"
-      },
-      "commande_moteur_2": {
-        "name": "Motor 2 command"
-      },
-      "regime_moteur_1": {
-        "name": "Motor 1 speed"
-      },
-      "regime_moteur_2": {
-        "name": "Motor 2 speed"
       },
       "bypass_position": {
         "name": "Bypass position",
@@ -180,6 +167,33 @@
           "e251": "251 · Unit temperature sensor fault (Tv)",
           "inconnue": "Unknown code (see “Error code”)"
         }
+      },
+      "niveau_en_cours": {
+        "name": "Applied level",
+        "state": {
+          "vacances": "Holiday",
+          "quotidien": "Daily",
+          "cuisine": "Kitchen boost",
+          "boost": "Boost"
+        }
+      },
+      "filtres_usage": {
+        "name": "Filters: usage"
+      },
+      "filtres_depuis_reset": {
+        "name": "Filters: time since reset"
+      },
+      "commande_moteur_extraction": {
+        "name": "Extract fan command"
+      },
+      "commande_moteur_insufflation": {
+        "name": "Supply fan command"
+      },
+      "regime_moteur_extraction": {
+        "name": "Extract fan speed"
+      },
+      "regime_moteur_insufflation": {
+        "name": "Supply fan speed"
       }
     }
   },

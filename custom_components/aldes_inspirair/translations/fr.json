@@ -57,8 +57,9 @@
             "state": {
               "vacances": "Vacances",
               "quotidien": "Quotidien",
-              "cuisine": "Cuisine",
-              "boost": "Boost"
+              "cuisine": "Pointe cuisine",
+              "boost": "Boost",
+              "auto": "Auto"
             }
           }
         }
@@ -70,8 +71,9 @@
         "state": {
           "vacances": "Vacances",
           "quotidien": "Quotidien",
-          "cuisine": "Cuisine",
-          "boost": "Boost"
+          "cuisine": "Pointe cuisine",
+          "boost": "Boost",
+          "auto": "Auto"
         }
       },
       "bypass_mode": {
@@ -120,26 +122,11 @@
       "rendement_echangeur": {
         "name": "Rendement échangeur"
       },
-      "filtres_jours_restants": {
-        "name": "Filtres : jours restants"
-      },
       "code_erreur": {
         "name": "Code erreur"
       },
       "equilibrage": {
         "name": "Équilibrage insufflation/extraction"
-      },
-      "commande_moteur_1": {
-        "name": "Commande moteur 1"
-      },
-      "commande_moteur_2": {
-        "name": "Commande moteur 2"
-      },
-      "regime_moteur_1": {
-        "name": "Régime moteur 1"
-      },
-      "regime_moteur_2": {
-        "name": "Régime moteur 2"
       },
       "bypass_position": {
         "name": "Position du bypass",
@@ -180,6 +167,33 @@
           "e251": "251 · Défaut sonde T° VMC (Tv)",
           "inconnue": "Code inconnu (voir « Code erreur »)"
         }
+      },
+      "niveau_en_cours": {
+        "name": "Niveau en cours",
+        "state": {
+          "vacances": "Vacances",
+          "quotidien": "Quotidien",
+          "cuisine": "Pointe cuisine",
+          "boost": "Boost"
+        }
+      },
+      "filtres_usage": {
+        "name": "Filtres : usage"
+      },
+      "filtres_depuis_reset": {
+        "name": "Filtres : temps depuis le reset"
+      },
+      "commande_moteur_extraction": {
+        "name": "Commande ventilateur extraction"
+      },
+      "commande_moteur_insufflation": {
+        "name": "Commande ventilateur insufflation"
+      },
+      "regime_moteur_extraction": {
+        "name": "Régime ventilateur extraction"
+      },
+      "regime_moteur_insufflation": {
+        "name": "Régime ventilateur insufflation"
       }
     }
   },

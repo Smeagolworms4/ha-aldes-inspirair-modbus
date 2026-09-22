@@ -120,18 +120,20 @@ Tout est regroupé sous un seul appareil **VMC Aldes**.
 
 | Entité | Type | Détail |
 |---|---|---|
-| Ventilation | ventilateur | la VMC elle-même : préréglages Vacances / Quotidien / Cuisine / Boost, ou vitesse en 4 crans. Pas d'*arrêt* — une double flux n'est pas faite pour s'arrêter, *Vacances* est le niveau le plus bas |
-| Niveau de ventilation | sélecteur | les mêmes quatre niveaux, pratique dans les automatisations |
+| Ventilation | ventilateur | la VMC elle-même : préréglages Vacances / Quotidien / Pointe cuisine / Boost / **Auto**, ou vitesse en 4 crans. Pas d'*arrêt* — une double flux n'est pas faite pour s'arrêter, *Vacances* est le niveau le plus bas |
+| Niveau de ventilation | sélecteur | les mêmes choix, pratique dans les automatisations |
+| Niveau en cours | capteur | ce que la VMC applique réellement. En *Auto*, le mode demandé vaut 255 : c'est le seul moyen de connaître le niveau réel |
 | Mode bypass | sélecteur | Désactivé / Automatique / Optimisation hiver / Optimisation été / Ouvert forcé |
 | Durée de vie des filtres | nombre | de 6 à 12 mois, comme dans le menu de la télécommande |
 | Température air neuf / extrait / insufflé / rejeté | capteur | résolution 0,01 °C |
 | Débit extraction / insufflation | capteur | débit réel, m³/h |
 | Rendement échangeur | capteur | calculé seulement bypass fermé, avec plus de 3 °C d'écart intérieur/extérieur |
-| Filtres : jours restants | capteur | décompte jusqu'au prochain changement |
+| Filtres : usage | capteur | % de la durée de vie consommée |
+| Filtres : temps depuis le reset | capteur | heures écoulées depuis la remise à zéro |
 | Position du bypass | capteur | fermé, ouvert, en fermeture, en ouverture, ou les défauts de câblage signalés par la VMC |
 | Bypass ouvert | capteur binaire | |
 | Erreur / Défaut | capteur / capteur binaire | le défaut en clair, d'après la liste de la notice Aldes |
-| Code erreur, équilibrage, commandes moteurs (V), régimes moteurs (tr/min) | capteur | diagnostic |
+| Code erreur, équilibrage, commandes et régimes des ventilateurs extraction / insufflation | capteur | diagnostic |
 
 ## Protocole
 
@@ -153,20 +155,26 @@ vraie InspirAIR Top, firmware 291.
 | Registre | Contenu | Accès |
 |---|---|---|
 | 12 | version logicielle | L |
-| 257 | niveau : 0 vacances, 1 quotidien, 2 cuisine, 3 boost | L/É |
+| 257 | mode demandé : 0 vacances, 1 quotidien, 2 pointe cuisine, 3 boost, **255 auto** | L/É |
 | 259 | bypass : 0 désactivé, 1 auto, 2 hiver, 3 été, 4 ouvert | L/É |
 | 267 | durée de vie des filtres, mois | L/É |
 | 278 | équilibrage insufflation/extraction, % | L |
 | 320 / 321 | commandes moteurs, mV (0–10 V) | L, verrouillé |
-| 347 | filtres, jours restants | L |
+| 346 / 347 | usage des filtres (%) / heures depuis le reset | L |
 | 348 | position du bypass | L |
 | 350 / 351 | air neuf / air extrait, 0,01 °C | L |
 | 352 / 353 | air rejeté / air insufflé, 0,01 °C | L, verrouillé |
-| 354 / 355 | régimes moteurs, tr/min | L, verrouillé |
+| 354 / 355 | régime ventilateur extraction / insufflation, tr/min | L, verrouillé |
 | 356 / 357 | débits extraction / insufflation, m³/h | L, verrouillé |
 | 384 | code défaut en cours | L |
+| 1056 | **niveau appliqué** (0 à 3), y compris en auto | L |
+| 1057 | 10 quand l'auto pilote la VMC, 0 sinon | L |
 
-Les registres 350 et 351 sont nommés dans la table Aldes ; lequel de 352/353 est
+Les registres 320/321 et 354/355 sont nommés d'après
+[avilleret/esphome-aldes](https://github.com/avilleret/esphome-aldes), qui les rattache aux ventilateurs
+d'extraction et d'insufflation. Les registres 346 et 347 viennent de la
+[notice Modbus InspirAIR Side](https://assets.aldes.fr/assets/docsFR/modbus-inspirair-side-notice-de-parametrage.pdf)
+d'Aldes, la table publiée la plus proche de celle du Top. Les registres 350 et 351 sont nommés dans la table Aldes ; lequel de 352/353 est
 l'air rejeté et lequel l'air insufflé a été déduit des mesures. La télécommande
 murale affiche les quatre valeurs avec leur nom dans *Installateur (0405) →
 Maintenance → Valeurs réelles* — ouvrez un ticket si elles ne concordent pas.
@@ -191,7 +199,7 @@ pip install -r requirements-test.txt
 pytest
 ```
 
-38 tests, joués contre une **fausse InspirAIR Top** : un petit serveur Modbus
+40 tests, joués contre une **fausse InspirAIR Top** : un petit serveur Modbus
 TCP qui se comporte comme la vraie — registres verrouillés tant que le code
 installateur n'est pas envoyé, FC06 refusé, esclave 2, silence sur un mauvais
 esclave. Ils couvrent le client Modbus seul, puis l'intégration chargée dans une

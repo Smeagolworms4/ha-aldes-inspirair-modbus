@@ -9,11 +9,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util.percentage import ordered_list_item_to_percentage, percentage_to_ordered_list_item
 
-from .const import REG_SPEED, SPEEDS
+from .const import AUTO, LEVELS, REG_APPLIED_LEVEL, REG_SPEED, SPEEDS
 from .coordinator import AldesConfigEntry
 from .entity import AldesEntity
 
-ORDERED = list(SPEEDS.values())
+ORDERED = list(LEVELS.values())          # du plus faible au plus fort, pour le pourcentage
+PRESETS = [*ORDERED, SPEEDS[AUTO]]
 BY_KEY = {key: code for code, key in SPEEDS.items()}
 
 
@@ -25,13 +26,19 @@ async def async_setup_entry(
 
 class AldesFan(AldesEntity, FanEntity):
     _attr_name = None
-    _attr_preset_modes = ORDERED
+    _attr_preset_modes = PRESETS
     _attr_speed_count = len(ORDERED)
     _attr_supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE | FanEntityFeature.TURN_ON
 
     @property
     def _speed(self) -> str | None:
+        """Le mode choisi : un niveau, ou « auto »."""
         return SPEEDS.get(self.coordinator.value(REG_SPEED))
+
+    @property
+    def _applied(self) -> str | None:
+        """Le niveau que la VMC applique réellement — le seul lisible en mode auto."""
+        return LEVELS.get(self.coordinator.value(REG_APPLIED_LEVEL))
 
     @property
     def is_on(self) -> bool | None:
@@ -39,13 +46,17 @@ class AldesFan(AldesEntity, FanEntity):
         return None if self._speed is None else True
 
     @property
+    def extra_state_attributes(self) -> dict[str, str | None]:
+        return {"applied_level": self._applied}
+
+    @property
     def preset_mode(self) -> str | None:
         return self._speed
 
     @property
     def percentage(self) -> int | None:
-        speed = self._speed
-        return ordered_list_item_to_percentage(ORDERED, speed) if speed else None
+        applied = self._applied
+        return ordered_list_item_to_percentage(ORDERED, applied) if applied else None
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         await self.coordinator.async_write(REG_SPEED, BY_KEY[preset_mode])
