@@ -90,6 +90,9 @@
     "number": {
       "filtre_duree": {
         "name": "Durée de vie des filtres"
+      },
+      "boost_duree": {
+        "name": "Durée du boost"
       }
     },
     "binary_sensor": {

@@ -8,6 +8,13 @@ DEFAULT_HOST = "192.168.0.213"
 DEFAULT_PORT = 502
 DEFAULT_SLAVE = 2
 DEFAULT_SCAN_INTERVAL = 15
+# Une passerelle Modbus ne traite qu'une requête à la fois : un télescopage avec un
+# autre maître sur le bus ne doit pas rendre tout le device indisponible.
+READ_ATTEMPTS = 3
+RETRY_DELAY = 1.0
+# Le Top n'a pas de temporisation de boost : c'est Home Assistant qui la tient.
+DEFAULT_BOOST_MINUTES = 30
+MAX_BOOST_MINUTES = 240
 MIN_SCAN_INTERVAL = 5
 MAX_SCAN_INTERVAL = 600
 
@@ -58,6 +65,8 @@ AUTO = 255
 # Le mode « auto » se choisit comme les niveaux, mais n'est pas un niveau : la VMC
 # module elle-même d'après ses capteurs, et publie le niveau appliqué en 1056.
 SPEEDS = {**LEVELS, AUTO: "auto"}
+BOOST = 3
+DAILY = 1
 
 BYPASS_MODES = {
     0: "desactive",

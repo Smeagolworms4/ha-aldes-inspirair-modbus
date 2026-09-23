@@ -37,6 +37,7 @@ class FakeVmc:
         self.unlocked = False
         self.auto_level = 1          # niveau choisi par la VMC quand elle est en auto
         self.silent = False          # la passerelle ne reçoit plus de réponse de la VMC
+        self.drop_next = 0           # nombre de requêtes avalées, pour simuler un télescopage
         self.reject_writes = False   # la VMC renvoie une exception sur toute écriture
         self.writes: list[tuple[int, int, int]] = []  # (fonction, registre, valeur)
         self.port = 0
@@ -60,6 +61,9 @@ class FakeVmc:
             while True:
                 tid, _, length, unit = struct.unpack(">HHHB", await reader.readexactly(7))
                 pdu = await reader.readexactly(length - 1)
+                if self.drop_next:
+                    self.drop_next -= 1
+                    break  # deux maîtres qui se télescopent sur le bus : la requête se perd
                 if self.silent or unit != UNIT:
                     break  # une passerelle sans réponse de l'esclave finit par couper
                 response = self._process(pdu)

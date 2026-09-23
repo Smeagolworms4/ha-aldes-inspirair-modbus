@@ -5,7 +5,11 @@ from __future__ import annotations
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from datetime import timedelta
+
 from homeassistant.const import ATTR_ENTITY_ID, STATE_UNAVAILABLE, STATE_UNKNOWN
+from homeassistant.util import dt as dt_util
+from pytest_homeassistant_custom_component.common import async_fire_time_changed
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr
@@ -264,3 +268,71 @@ async def test_flow_setpoints_are_read_only_and_optional(
     await hass.config_entries.async_reload(setup_entry.entry_id)
     await hass.async_block_till_done()
     assert hass.states.get(entry).state == "210"
+
+
+async def test_a_lost_request_does_not_blank_the_device(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc, entity_id
+) -> None:
+    """Deux maîtres sur le bus se télescopent : il faut réessayer, pas tout éteindre."""
+    vmc.drop_next = 2
+    await refresh(hass, setup_entry)
+    assert state(hass, entity_id("sensor", "debit_extraction")) == "120"
+
+    vmc.drop_next = 10  # là, la VMC est vraiment injoignable
+    await refresh(hass, setup_entry)
+    assert state(hass, entity_id("sensor", "debit_extraction")) == STATE_UNAVAILABLE
+
+
+async def test_boost_returns_to_the_previous_level(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc, entity_id
+) -> None:
+    """Le Top n'a pas de minuterie de boost : Home Assistant la tient."""
+    await hass.services.async_call(
+        "number", "set_value", {ATTR_ENTITY_ID: entity_id("number", "boost_duree"), "value": 30}, blocking=True
+    )
+    await hass.services.async_call(
+        "fan", "set_preset_mode", {ATTR_ENTITY_ID: entity_id("fan", "ventilation"), "preset_mode": "boost"}, blocking=True
+    )
+    assert vmc.registers[257] == 3
+
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(minutes=31))
+    await hass.async_block_till_done()
+    assert vmc.registers[257] == 1  # retour au niveau d'avant
+
+
+async def test_boost_timer_is_dropped_when_the_level_changes(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc, entity_id
+) -> None:
+    select = entity_id("select", "niveau")
+    await hass.services.async_call("select", "select_option", {ATTR_ENTITY_ID: select, "option": "boost"}, blocking=True)
+    await hass.services.async_call("select", "select_option", {ATTR_ENTITY_ID: select, "option": "cuisine"}, blocking=True)
+
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(minutes=31))
+    await hass.async_block_till_done()
+    assert vmc.registers[257] == 2  # la minuterie ne doit pas ramener au quotidien
+
+
+async def test_zero_means_a_permanent_boost(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc, entity_id
+) -> None:
+    await hass.services.async_call(
+        "number", "set_value", {ATTR_ENTITY_ID: entity_id("number", "boost_duree"), "value": 0}, blocking=True
+    )
+    await hass.services.async_call(
+        "select", "select_option", {ATTR_ENTITY_ID: entity_id("select", "niveau"), "option": "boost"}, blocking=True
+    )
+
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(hours=5))
+    await hass.async_block_till_done()
+    assert vmc.registers[257] == 3
+
+
+async def test_boost_duration_survives_a_reload(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, entity_id
+) -> None:
+    number = entity_id("number", "boost_duree")
+    await hass.services.async_call("number", "set_value", {ATTR_ENTITY_ID: number, "value": 45}, blocking=True)
+
+    await hass.config_entries.async_reload(setup_entry.entry_id)
+    await hass.async_block_till_done()
+    assert state(hass, number) == "45.0"

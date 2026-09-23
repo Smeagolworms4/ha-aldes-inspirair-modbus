@@ -28,4 +28,5 @@ async def async_setup_entry(hass: HomeAssistant, entry: AldesConfigEntry) -> boo
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: AldesConfigEntry) -> bool:
+    entry.runtime_data.cancel_boost()
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

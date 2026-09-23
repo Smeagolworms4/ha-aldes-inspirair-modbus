@@ -59,7 +59,7 @@ class AldesFan(AldesEntity, FanEntity):
         return ordered_list_item_to_percentage(ORDERED, applied) if applied else None
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
-        await self.coordinator.async_write(REG_SPEED, BY_KEY[preset_mode])
+        await self.coordinator.async_set_speed(BY_KEY[preset_mode])
 
     async def async_set_percentage(self, percentage: int) -> None:
         key = ORDERED[0] if percentage == 0 else percentage_to_ordered_list_item(ORDERED, percentage)

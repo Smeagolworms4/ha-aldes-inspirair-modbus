@@ -39,6 +39,9 @@
     "number": {
       "filtre_duree": {
         "default": "mdi:air-filter"
+      },
+      "boost_duree": {
+        "default": "mdi:timer-cog-outline"
       }
     },
     "binary_sensor": {

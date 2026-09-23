@@ -108,6 +108,10 @@ so a wiring or serial-settings problem shows up right there.
 |---|---|---|
 | Polling interval | 15 s | 5 s to 10 min |
 
+A Modbus gateway serves one request at a time, so a second master on the bus — a laptop probing registers,
+another tool — makes a read time out. A lost read is retried twice before the device is reported
+unavailable, which is what keeps a passing collision from blanking every entity.
+
 The gateway address can be changed later with *Reconfigure*, without losing the
 entities or their history.
 
@@ -122,6 +126,7 @@ Everything is grouped under one **VMC Aldes** device.
 | Applied level | sensor | what the unit actually runs at. In *Auto* the requested mode reads 255, and this is the only way to know the real level |
 | Bypass mode | select | Disabled / Automatic / Winter optimisation / Summer optimisation / Forced open |
 | Filter lifetime | number | 6 to 12 months, as in the remote's menu |
+| Boost duration | number | 0 to 240 min, **held by Home Assistant** — the Top has no boost timer of its own. `0` keeps the boost until something else changes the level. It applies to boosts requested from Home Assistant; one started from the wall remote stays on |
 | Outdoor / extract / supply / exhaust air temperature | sensor | 0.01 °C resolution |
 | Extract / supply airflow | sensor | real airflow, m³/h |
 | Heat exchanger efficiency | sensor | computed only while the bypass is closed and the indoor/outdoor gap exceeds 3 °C |
@@ -200,12 +205,12 @@ pip install -r requirements-test.txt
 pytest
 ```
 
-43 tests, run against a **fake InspirAIR Top**: a small Modbus TCP server that
+48 tests, run against a **fake InspirAIR Top**: a small Modbus TCP server that
 behaves like the real unit — locked registers until the installer code, FC06
 refused, slave 2, silence on a wrong slave. They cover the Modbus client on its
 own, then the integration loaded inside a real Home Assistant instance: setup,
 options, reconfiguration, every entity, every command, a refused write, and a
-unit that stops answering.
+unit that stops answering, a request lost to a bus collision, and the boost timer.
 
 The test harness needs Python 3.13. Without it locally:
 

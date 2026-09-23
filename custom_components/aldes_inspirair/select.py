@@ -45,4 +45,7 @@ class AldesSelect(AldesEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         code = next(c for c, key in self.entity_description.choices.items() if key == option)
-        await self.coordinator.async_write(self.entity_description.register, code)
+        if self.entity_description.register == REG_SPEED:
+            await self.coordinator.async_set_speed(code)
+        else:
+            await self.coordinator.async_write(self.entity_description.register, code)

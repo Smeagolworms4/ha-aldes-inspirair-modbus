@@ -111,6 +111,10 @@ tout de suite.
 |---|---|---|
 | Intervalle d'interrogation | 15 s | de 5 s à 10 min |
 
+Une passerelle Modbus ne traite qu'une requête à la fois : un second maître sur le bus — un ordinateur qui
+sonde des registres, un autre outil — fait échouer une lecture. Une lecture perdue est réessayée deux fois
+avant de déclarer la VMC injoignable, ce qui évite qu'un télescopage passager vide toutes les entités.
+
 L'adresse de la passerelle peut être changée plus tard avec *Reconfigurer*,
 sans perdre les entités ni leur historique.
 
@@ -125,6 +129,7 @@ Tout est regroupé sous un seul appareil **VMC Aldes**.
 | Niveau en cours | capteur | ce que la VMC applique réellement. En *Auto*, le mode demandé vaut 255 : c'est le seul moyen de connaître le niveau réel |
 | Mode bypass | sélecteur | Désactivé / Automatique / Optimisation hiver / Optimisation été / Ouvert forcé |
 | Durée de vie des filtres | nombre | de 6 à 12 mois, comme dans le menu de la télécommande |
+| Durée du boost | nombre | de 0 à 240 min, **tenue par Home Assistant** — le Top n'a pas de temporisation de boost. `0` laisse le boost actif jusqu'à ce que quelque chose change de niveau. S'applique aux boosts demandés depuis Home Assistant ; un boost lancé depuis la télécommande murale reste actif |
 | Température air neuf / extrait / insufflé / rejeté | capteur | résolution 0,01 °C |
 | Débit extraction / insufflation | capteur | débit réel, m³/h |
 | Rendement échangeur | capteur | calculé seulement bypass fermé, avec plus de 3 °C d'écart intérieur/extérieur |
@@ -208,7 +213,7 @@ pip install -r requirements-test.txt
 pytest
 ```
 
-43 tests, joués contre une **fausse InspirAIR Top** : un petit serveur Modbus
+48 tests, joués contre une **fausse InspirAIR Top** : un petit serveur Modbus
 TCP qui se comporte comme la vraie — registres verrouillés tant que le code
 installateur n'est pas envoyé, FC06 refusé, esclave 2, silence sur un mauvais
 esclave. Ils couvrent le client Modbus seul, puis l'intégration chargée dans une
