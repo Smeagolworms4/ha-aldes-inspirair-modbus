@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 
 from homeassistant.config_entries import ConfigEntry
@@ -11,16 +11,20 @@ from homeassistant.core import CALLBACK_TYPE, HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .const import (
     BOOST,
+    CLOCK_SYNC_COOLDOWN,
     CONF_SCAN_INTERVAL,
     DAILY,
     DEFAULT_BOOST_MINUTES,
+    DEFAULT_CLOCK_TOLERANCE,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     READ_ATTEMPTS,
     READ_BLOCKS,
+    REG_CLOCK,
     REG_SPEED,
     RETRY_DELAY,
 )
@@ -29,6 +33,20 @@ from .modbus import AldesModbusClient, AldesModbusError
 _LOGGER = logging.getLogger(__name__)
 
 type AldesConfigEntry = ConfigEntry[AldesCoordinator]
+
+
+def unit_clock(data: dict[int, int]) -> datetime | None:
+    """Horloge interne de la VMC, celle qui sert de base à la programmation horaire."""
+    year, month, day, _weekday, hour, minute, second = (data.get(REG_CLOCK + i) or 0 for i in range(7))
+    try:
+        return datetime(year, month, day, hour, minute, second)
+    except ValueError:
+        return None
+
+
+def clock_drift(clock: datetime, now: datetime) -> float:
+    """Retard (positif) ou avance de l'horloge de la VMC sur l'heure locale, en minutes."""
+    return (now.replace(tzinfo=None) - clock).total_seconds() / 60
 
 
 class AldesCoordinator(DataUpdateCoordinator[dict[int, int]]):
@@ -46,11 +64,14 @@ class AldesCoordinator(DataUpdateCoordinator[dict[int, int]]):
         self.boost_minutes: float = DEFAULT_BOOST_MINUTES
         self._end_boost_unsub: CALLBACK_TYPE | None = None
         self._level_before_boost = DAILY
+        self.clock_sync = False
+        self.clock_tolerance: float = DEFAULT_CLOCK_TOLERANCE
+        self._last_clock_sync: datetime | None = None
 
     async def _async_update_data(self) -> dict[int, int]:
         for attempt in range(1, READ_ATTEMPTS + 1):
             try:
-                return await self._read_all()
+                data = await self._read_all()
             except AldesModbusError as err:
                 if attempt == READ_ATTEMPTS:
                     raise UpdateFailed(
@@ -60,7 +81,31 @@ class AldesCoordinator(DataUpdateCoordinator[dict[int, int]]):
                     ) from err
                 _LOGGER.debug("Relevé %s/%s échoué (%s), nouvel essai", attempt, READ_ATTEMPTS, err)
                 await asyncio.sleep(RETRY_DELAY)
+            else:
+                await self._sync_clock(data)
+                return data
         raise AssertionError  # inatteignable
+
+    async def _sync_clock(self, data: dict[int, int]) -> None:
+        """Remet l'horloge de la VMC à l'heure locale si elle s'en écarte trop."""
+        if not self.clock_sync:
+            return
+        clock = unit_clock(data)
+        now = dt_util.now()
+        if clock is None or abs(clock_drift(clock, now)) <= self.clock_tolerance:
+            return
+        if self._last_clock_sync and (now - self._last_clock_sync).total_seconds() < CLOCK_SYNC_COOLDOWN:
+            return
+        self._last_clock_sync = now
+        values = [now.year, now.month, now.day, now.weekday(), now.hour, now.minute, now.second]
+        _LOGGER.info("Horloge de la VMC décalée de %s min, remise à l'heure", round(clock_drift(clock, now)))
+        try:
+            await self.client.unlock()
+            await self.client.write_many(REG_CLOCK, values)
+        except AldesModbusError as err:
+            _LOGGER.warning("Remise à l'heure de la VMC impossible : %s", err)
+            return
+        data.update({REG_CLOCK + offset: value for offset, value in enumerate(values)})
 
     async def _read_all(self) -> dict[int, int]:
         data: dict[int, int] = {}

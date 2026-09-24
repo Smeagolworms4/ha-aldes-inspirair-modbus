@@ -336,3 +336,88 @@ async def test_boost_duration_survives_a_reload(
     await hass.config_entries.async_reload(setup_entry.entry_id)
     await hass.async_block_till_done()
     assert state(hass, number) == "45.0"
+
+
+def clock_writes(vmc: FakeVmc) -> list[tuple[int, int]]:
+    return [(reg, value) for reg, value in vmc.settings_writes() if 1304 <= reg <= 1310]
+
+
+async def test_clock_is_left_alone_by_default(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc, entity_id
+) -> None:
+    """La ConnectBox recale l'horloge quand elle a Internet : HA n'y touche que si on l'y autorise."""
+    assert state(hass, entity_id("switch", "horloge_auto")) == "off"
+    assert state(hass, entity_id("number", "horloge_tolerance")) == "5"
+    await refresh(hass, setup_entry)
+    assert clock_writes(vmc) == []
+
+
+async def test_clock_is_set_beyond_the_tolerance(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc, entity_id
+) -> None:
+    from freezegun import freeze_time
+
+    await hass.config.async_set_time_zone("Europe/Paris")
+    # Mercredi 23/09/2026 00:30:00 à Paris : la VMC (22/09 21:25:31) retarde de 3 h.
+    with freeze_time("2026-09-22 22:30:00"):
+        await hass.services.async_call(
+            "switch", "turn_on", {ATTR_ENTITY_ID: entity_id("switch", "horloge_auto")}, blocking=True
+        )
+        await hass.async_block_till_done()
+        assert clock_writes(vmc) == [(1304, 2026), (1305, 9), (1306, 23), (1307, 2), (1308, 0), (1309, 30), (1310, 0)]
+        assert state(hass, entity_id("sensor", "derive_horloge")) == "0"
+
+
+async def test_small_drift_is_tolerated(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc, entity_id
+) -> None:
+    from freezegun import freeze_time
+
+    await hass.config.async_set_time_zone("UTC")
+    await hass.services.async_call(
+        "number", "set_value", {ATTR_ENTITY_ID: entity_id("number", "horloge_tolerance"), "value": 10}, blocking=True
+    )
+    with freeze_time("2026-09-22 21:35:00"):  # 9 min 29 s d'écart
+        await hass.services.async_call(
+            "switch", "turn_on", {ATTR_ENTITY_ID: entity_id("switch", "horloge_auto")}, blocking=True
+        )
+        await refresh(hass, setup_entry)
+    assert clock_writes(vmc) == []
+
+
+async def test_clock_is_set_at_most_once_an_hour(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, vmc: FakeVmc, entity_id
+) -> None:
+    """Si quelque chose remet l'horloge de travers, HA ne se bat pas avec à chaque relevé."""
+    from freezegun import freeze_time
+
+    await hass.config.async_set_time_zone("UTC")
+    with freeze_time("2026-09-22 23:00:00") as frozen:
+        await hass.services.async_call(
+            "switch", "turn_on", {ATTR_ENTITY_ID: entity_id("switch", "horloge_auto")}, blocking=True
+        )
+        await hass.async_block_till_done()
+        assert len(clock_writes(vmc)) == 7
+
+        vmc.registers.update({1308: 21, 1309: 25})  # l'horloge repart en arrière
+        frozen.tick(timedelta(minutes=30))
+        await refresh(hass, setup_entry)
+        assert len(clock_writes(vmc)) == 7
+
+        frozen.tick(timedelta(minutes=31))
+        await refresh(hass, setup_entry)
+        assert len(clock_writes(vmc)) == 14
+
+
+async def test_clock_settings_survive_a_reload(
+    hass: HomeAssistant, setup_entry: MockConfigEntry, entity_id
+) -> None:
+    switch, number = entity_id("switch", "horloge_auto"), entity_id("number", "horloge_tolerance")
+    await hass.services.async_call("switch", "turn_on", {ATTR_ENTITY_ID: switch}, blocking=True)
+    await hass.services.async_call("number", "set_value", {ATTR_ENTITY_ID: number, "value": 15}, blocking=True)
+
+    await hass.config_entries.async_reload(setup_entry.entry_id)
+    await hass.async_block_till_done()
+    assert state(hass, switch) == "on"
+    assert state(hass, number) == "15.0"
+    assert setup_entry.runtime_data.clock_sync is True

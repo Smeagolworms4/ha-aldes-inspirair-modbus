@@ -139,6 +139,7 @@ Tout est regroupé sous un seul appareil **VMC Aldes**.
 | Bypass ouvert | capteur binaire | |
 | Erreur / Défaut | capteur / capteur binaire | le défaut en clair, d'après la liste de la notice Aldes |
 | Horloge de la VMC, dérive de l'horloge | capteur | la date et l'heure internes de la machine, et son écart avec Home Assistant — c'est cette horloge que suit la programmation hebdomadaire |
+| Remise à l'heure automatique, tolérance de l'horloge | interrupteur, nombre | **désactivée par défaut** — la ConnectBox recale déjà l'horloge quand elle a Internet. Une fois activée, Home Assistant remet l'horloge de la VMC à son heure locale dès que la dérive dépasse la tolérance (de 1 à 60 min, 5 par défaut), au plus une fois par heure |
 | Code erreur, équilibrage, commandes et régimes des ventilateurs extraction / insufflation | capteur | diagnostic |
 | Consignes de débit par niveau, configuration ventilateurs | capteur | valeurs de mise en service, en lecture seule, désactivées par défaut |
 
@@ -179,7 +180,7 @@ vraie InspirAIR Top, firmware 291.
 | 1057 | 10 quand l'auto pilote la VMC, 0 sinon | L |
 | 1028 | configuration ventilateurs (2 = A, 1 = B) | L |
 | 1040-1049 | consignes de débit par niveau, par paires (extraction, insufflation) : vacances, quotidien, pointe cuisine, boost, maxi | L |
-| 1304-1310 | horloge : année, mois, jour, jour de semaine (lundi = 0), heure, minute, seconde | L |
+| 1304-1310 | horloge : année, mois, jour, jour de semaine (lundi = 0), heure, minute, seconde — écrite en une seule trame FC16 | L/É |
 
 Les registres 320/321 et 354/355 sont nommés d'après
 [avilleret/esphome-aldes](https://github.com/avilleret/esphome-aldes), qui les rattache aux ventilateurs

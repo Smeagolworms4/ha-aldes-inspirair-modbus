@@ -65,7 +65,14 @@ class AldesModbusClient:
 
     async def write(self, address: int, value: int) -> None:
         """Écrit un registre en FC16."""
-        await self._transact(struct.pack(">BHHBH", 16, address, 1, 2, value & 0xFFFF))
+        await self.write_many(address, [value])
+
+    async def write_many(self, address: int, values: list[int]) -> None:
+        """Écrit des registres consécutifs en une seule trame FC16."""
+        count = len(values)
+        await self._transact(
+            struct.pack(f">BHHB{count}H", 16, address, count, 2 * count, *(v & 0xFFFF for v in values))
+        )
 
     async def unlock(self) -> None:
         """Envoie le code installateur qui ouvre les registres protégés."""

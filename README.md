@@ -136,6 +136,7 @@ Everything is grouped under one **VMC Aldes** device.
 | Bypass open | binary sensor | |
 | Error / Fault | sensor / binary sensor | the fault in plain words, from the list in the Aldes manual |
 | Unit clock, clock drift | sensor | the unit's own date and time, and how far it runs from Home Assistant's — it is what the weekly schedule follows |
+| Automatic clock setting, clock tolerance | switch, number | **off by default** — the ConnectBox already sets the clock when it has Internet access. When on, Home Assistant resets the unit's clock to its local time as soon as the drift exceeds the tolerance (1 to 60 min, 5 by default), at most once an hour |
 | Error code, balance, extract/supply fan commands (V) and speeds (rpm) | sensor | diagnostic |
 | Airflow setpoints per level, fan configuration | sensor | commissioning values, read-only, disabled by default |
 
@@ -174,7 +175,7 @@ firmware 291.
 | 1057 | 10 while auto drives the unit, 0 otherwise | R |
 | 1028 | fan configuration (2 = A, 1 = B) | R |
 | 1040-1049 | airflow setpoints per level, in (extract, supply) pairs: holiday, daily, kitchen boost, boost, max | R |
-| 1304-1310 | unit clock: year, month, day, weekday (Monday = 0), hour, minute, second | R |
+| 1304-1310 | unit clock: year, month, day, weekday (Monday = 0), hour, minute, second — written in one FC16 frame | R/W |
 
 Registers 320/321 and 354/355 are named after
 [avilleret/esphome-aldes](https://github.com/avilleret/esphome-aldes), which maps them to the extract and

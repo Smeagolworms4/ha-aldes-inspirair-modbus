@@ -40,6 +40,7 @@ class FakeVmc:
         self.drop_next = 0           # nombre de requêtes avalées, pour simuler un télescopage
         self.reject_writes = False   # la VMC renvoie une exception sur toute écriture
         self.writes: list[tuple[int, int, int]] = []  # (fonction, registre, valeur)
+        self.frames = 0  # trames d'écriture reçues
         self.port = 0
         self._server: asyncio.Server | None = None
 
@@ -84,6 +85,7 @@ class FakeVmc:
             address, count, size = struct.unpack(">HHB", pdu[1:6])
             if self.reject_writes:
                 return bytes([0x90, 4])
+            self.frames += 1
             for offset, value in enumerate(struct.unpack(f">{count}H", pdu[6 : 6 + size])):
                 self._write(function, address + offset, value)
             return struct.pack(">BHH", 16, address, count)

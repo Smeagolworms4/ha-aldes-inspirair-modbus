@@ -17,6 +17,13 @@ DEFAULT_BOOST_MINUTES = 30
 MAX_BOOST_MINUTES = 240
 MIN_SCAN_INTERVAL = 5
 MAX_SCAN_INTERVAL = 600
+# L'horloge de la VMC cadence sa programmation hebdomadaire et dérive sans se recaler
+# quand la ConnectBox n'a pas Internet : si on l'y autorise, HA la remet à l'heure
+# au-delà d'une tolérance (en minutes).
+DEFAULT_CLOCK_TOLERANCE = 5
+MAX_CLOCK_TOLERANCE = 60
+# Pas plus d'une remise à l'heure par heure, si quelque chose la remet de travers.
+CLOCK_SYNC_COOLDOWN = 3600
 
 # Code installateur : sans lui, une partie des registres renvoie -1.
 UNLOCK_REGISTER = 16

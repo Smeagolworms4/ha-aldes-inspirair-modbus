@@ -42,6 +42,9 @@
       },
       "boost_duree": {
         "default": "mdi:timer-cog-outline"
+      },
+      "horloge_tolerance": {
+        "default": "mdi:clock-time-four-outline"
       }
     },
     "binary_sensor": {
@@ -164,6 +167,11 @@
       },
       "consigne_insufflation_max": {
         "default": "mdi:fan-chevron-down"
+      }
+    },
+    "switch": {
+      "horloge_auto": {
+        "default": "mdi:clock-check-outline"
       }
     }
   }

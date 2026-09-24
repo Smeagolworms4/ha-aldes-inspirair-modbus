@@ -1,4 +1,4 @@
-"""Réglages numériques : durée de vie des filtres, et durée du boost tenue par Home Assistant."""
+"""Réglages numériques : durée de vie des filtres, durée du boost et tolérance d'horloge tenues par Home Assistant."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from homeassistant.const import EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import MAX_BOOST_MINUTES, REG_FILTER_MONTHS
+from .const import MAX_BOOST_MINUTES, MAX_CLOCK_TOLERANCE, REG_FILTER_MONTHS
 from .coordinator import AldesConfigEntry
 from .entity import AldesEntity
 
@@ -17,7 +17,11 @@ async def async_setup_entry(
 ) -> None:
     coordinator = entry.runtime_data
     async_add_entities(
-        [AldesFilterDuration(coordinator, "filtre_duree"), AldesBoostDuration(coordinator, "boost_duree")]
+        [
+            AldesFilterDuration(coordinator, "filtre_duree"),
+            AldesBoostDuration(coordinator, "boost_duree"),
+            AldesClockTolerance(coordinator, "horloge_tolerance"),
+        ]
     )
 
 
@@ -68,4 +72,32 @@ class AldesBoostDuration(AldesEntity, RestoreNumber):
         self.coordinator.boost_minutes = value
         if not value:
             self.coordinator.cancel_boost()  # 0 = boost permanent
+        self.async_write_ha_state()
+
+
+class AldesClockTolerance(AldesEntity, RestoreNumber):
+    """Écart toléré entre l'horloge de la VMC et celle de Home Assistant avant remise à l'heure."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_native_min_value = 1
+    _attr_native_max_value = MAX_CLOCK_TOLERANCE
+    _attr_native_step = 1
+    _attr_native_unit_of_measurement = UnitOfTime.MINUTES
+    _attr_mode = NumberMode.BOX
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        if (last := await self.async_get_last_number_data()) and last.native_value is not None:
+            self.coordinator.clock_tolerance = last.native_value
+
+    @property
+    def native_value(self) -> float:
+        return self.coordinator.clock_tolerance
+
+    @property
+    def available(self) -> bool:
+        return True
+
+    async def async_set_native_value(self, value: float) -> None:
+        self.coordinator.clock_tolerance = value
         self.async_write_ha_state()

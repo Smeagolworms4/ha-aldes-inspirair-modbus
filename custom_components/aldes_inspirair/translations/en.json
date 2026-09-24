@@ -93,6 +93,9 @@
       },
       "boost_duree": {
         "name": "Boost duration"
+      },
+      "horloge_tolerance": {
+        "name": "Clock tolerance"
       }
     },
     "binary_sensor": {
@@ -241,6 +244,11 @@
       },
       "consigne_insufflation_max": {
         "name": "Supply airflow setpoint — Max"
+      }
+    },
+    "switch": {
+      "horloge_auto": {
+        "name": "Automatic clock setting"
       }
     }
   },

@@ -28,7 +28,6 @@ from homeassistant.util import dt as dt_util
 from .const import (
     BYPASS_POSITIONS,
     LEVELS,
-    REG_CLOCK,
     ERROR_CODES,
     ERROR_UNKNOWN,
     REG_BALANCE,
@@ -51,7 +50,7 @@ from .const import (
     REG_T_SUPPLY,
     error_key,
 )
-from .coordinator import AldesConfigEntry, AldesCoordinator
+from .coordinator import AldesConfigEntry, AldesCoordinator, clock_drift, unit_clock
 from .entity import AldesEntity
 
 
@@ -123,21 +122,13 @@ def exchanger_efficiency(c: AldesCoordinator) -> float | None:
     return round(100 * (supply - outdoor) / (extract - outdoor), 1)
 
 
-def unit_clock(c: AldesCoordinator) -> datetime | None:
-    """Horloge interne de la VMC, celle qui sert de base à la programmation horaire."""
-    year, month, day, _weekday, hour, minute, second = (c.value(REG_CLOCK + i) or 0 for i in range(7))
-    try:
-        return datetime(year, month, day, hour, minute, second)
-    except ValueError:
-        return None
+def vmc_clock(c: AldesCoordinator) -> datetime | None:
+    return unit_clock(c.data) if c.data else None
 
 
-def clock_drift(c: AldesCoordinator) -> int | None:
-    """Retard ou avance de l'horloge de la VMC, en minutes, sur l'heure locale."""
-    clock = unit_clock(c)
-    if clock is None:
-        return None
-    return round((dt_util.now().replace(tzinfo=None) - clock).total_seconds() / 60)
+def vmc_clock_drift(c: AldesCoordinator) -> int | None:
+    clock = vmc_clock(c)
+    return None if clock is None else round(clock_drift(clock, dt_util.now()))
 
 
 def error_state(c: AldesCoordinator) -> str | None:
@@ -220,14 +211,14 @@ DESCRIPTIONS = (
     AldesSensorDescription(
         key="horloge",
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda c: (clock := unit_clock(c)) and clock.strftime("%d/%m/%Y %H:%M:%S"),
+        value_fn=lambda c: (clock := vmc_clock(c)) and clock.strftime("%d/%m/%Y %H:%M:%S"),
     ),
     AldesSensorDescription(
         key="derive_horloge",
         native_unit_of_measurement=UnitOfTime.MINUTES,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=clock_drift,
+        value_fn=vmc_clock_drift,
     ),
     AldesSensorDescription(
         key="code_erreur",

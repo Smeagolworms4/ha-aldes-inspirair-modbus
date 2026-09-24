@@ -93,6 +93,9 @@
       },
       "boost_duree": {
         "name": "Durée du boost"
+      },
+      "horloge_tolerance": {
+        "name": "Tolérance de l'horloge"
       }
     },
     "binary_sensor": {
@@ -241,6 +244,11 @@
       },
       "consigne_insufflation_max": {
         "name": "Consigne débit insufflation — Maxi"
+      }
+    },
+    "switch": {
+      "horloge_auto": {
+        "name": "Remise à l'heure automatique"
       }
     }
   },

@@ -53,3 +53,10 @@ async def test_unreachable_gateway(vmc: FakeVmc) -> None:
     client = AldesModbusClient("127.0.0.1", vmc.port, 2, timeout=1)
     with pytest.raises(AldesModbusError, match="impossible"):
         await client.read(257, 1)
+
+
+async def test_consecutive_registers_are_written_in_one_frame(vmc: FakeVmc) -> None:
+    client = AldesModbusClient("127.0.0.1", vmc.port, 2)
+    await client.write_many(1304, [2026, 9, 24, 3, 10, 55, 10])
+    assert vmc.writes == [(16, 1304 + i, v) for i, v in enumerate([2026, 9, 24, 3, 10, 55, 10])]
+    assert vmc.frames == 1
